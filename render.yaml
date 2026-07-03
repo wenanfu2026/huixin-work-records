@@ -1,7 +1,0 @@
-﻿services:
-  - type: web
-    name: huixin-work-records
-    env: node
-    buildCommand: ""
-    startCommand: node server.js
-    healthCheckPath: /
