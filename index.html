@@ -1,0 +1,617 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>汇鑫玩具工作记录</title>
+<style>
+:root{--primary:#1a73e8;--primary-dark:#1557b0;--danger:#d93025;--success:#188038;--warning:#f9ab00;--bg:#f0f2f5;--card:#fff;--text:#202124;--text2:#5f6368;--border:#dadce0;--r:8px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;padding-bottom:80px}
+.container{max-width:640px;margin:0 auto;padding:12px}
+.header{background:var(--primary);color:#fff;padding:14px 16px;text-align:center;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+.header h1{font-size:17px;font-weight:600}
+.header .sub{font-size:11px;opacity:.8;margin-top:2px;display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
+.header .sub .mode-tag{font-size:10px;background:rgba(255,255,255,0.25);padding:1px 8px;border-radius:8px}
+.header .sub .mode-tag.on{background:rgba(255,255,255,0.4)}
+.header-actions{position:absolute;right:12px;top:50%;transform:translateY(-50%);display:flex;gap:6px}
+.header-actions button{background:rgba(255,255,255,0.2);border:none;color:#fff;padding:5px 10px;border-radius:4px;font-size:12px;cursor:pointer}
+.header-actions button:hover{background:rgba(255,255,255,0.3)}
+.header-actions button.on{background:rgba(255,255,255,0.35);font-weight:600}
+.tabs{display:flex;background:var(--card);border-bottom:1px solid var(--border);position:sticky;top:49px;z-index:99}
+.tabs button{flex:1;padding:9px;border:none;background:transparent;font-size:13px;color:var(--text2);cursor:pointer;position:relative}
+.tabs button.on{color:var(--primary);font-weight:600}
+.tabs button.on::after{content:"";position:absolute;bottom:0;left:15%;right:15%;height:3px;background:var(--primary);border-radius:3px 3px 0 0}
+.tabs button .badge{background:var(--danger);color:#fff;font-size:10px;padding:1px 6px;border-radius:10px;margin-left:4px}
+.card{background:var(--card);border-radius:var(--r);padding:14px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,0.07)}
+.card-title{font-size:14px;font-weight:600;margin-bottom:10px}
+.form-group{margin-bottom:10px}
+.form-group label{display:block;font-size:12px;color:var(--text2);margin-bottom:3px;font-weight:500}
+.form-group input,.form-group textarea,.form-group select{width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:6px;font-size:14px;outline:none;font-family:inherit;background:#fff}
+.form-group input:focus,.form-group textarea:focus{border-color:var(--primary);box-shadow:0 0 0 2px rgba(26,115,232,0.12)}
+.form-group textarea{resize:vertical;min-height:50px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:9px 18px;border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;width:100%}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-success{background:var(--success);color:#fff}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}
+.btn-outline:hover{background:#f8f9fa}
+.btn-sm{padding:5px 10px;font-size:12px;width:auto}
+.btn-xs{padding:3px 7px;font-size:11px;width:auto;border-radius:4px}
+.btn-group{display:flex;gap:8px;margin-top:10px}
+.btn-group .btn{flex:1}
+.record-item{background:var(--card);border-radius:var(--r);padding:12px;margin-bottom:8px;box-shadow:0 1px 2px rgba(0,0,0,0.05);border-left:4px solid var(--border)}
+.record-item.pending{border-left-color:var(--warning)}
+.record-item.approved{border-left-color:var(--success)}
+.record-item.rejected{border-left-color:var(--danger);opacity:.7}
+.record-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px}
+.record-header .pno{font-weight:600;font-size:14px}
+.record-header .tag{font-size:10px;padding:1px 7px;border-radius:10px;white-space:nowrap}
+.tag.pending{background:#fef7e0;color:#e37400}
+.tag.approved{background:#e6f4ea;color:#137333}
+.tag.rejected{background:#fce8e6;color:#d93025}
+.record-body{font-size:12px;color:var(--text2)}
+.record-body .fi{display:inline-block;margin-right:14px}
+.record-body .fi strong{color:var(--text);font-weight:500}
+.record-notes{margin-top:5px;padding-top:4px;border-top:1px dashed var(--border);font-size:12px;color:var(--text2)}
+.record-actions{display:flex;gap:5px;margin-top:6px;flex-wrap:wrap}
+.record-meta{font-size:11px;color:#999;margin-top:5px}
+.login-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:200;padding:20px}
+.login-box{background:var(--card);border-radius:var(--r);padding:24px;width:100%;max-width:320px;box-shadow:0 8px 30px rgba(0,0,0,0.2)}
+.login-box h2{font-size:17px;margin-bottom:14px;text-align:center}
+.login-error{color:var(--danger);font-size:12px;text-align:center;margin-bottom:8px;display:none}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;z-index:300;padding:16px}
+.modal{background:var(--card);border-radius:var(--r);padding:18px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 8px 30px rgba(0,0,0,0.2)}
+.modal h3{font-size:15px;margin-bottom:12px}
+.summary-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px}
+.summary-item{background:var(--card);border-radius:var(--r);padding:10px;text-align:center;box-shadow:0 1px 2px rgba(0,0,0,0.05)}
+.summary-item .num{font-size:20px;font-weight:700;color:var(--primary)}
+.summary-item .lb{font-size:11px;color:var(--text2);margin-top:2px}
+.summary-item.green .num{color:var(--success)}
+.summary-item.red .num{color:var(--danger)}
+.sc{background:var(--card);border-radius:var(--r);padding:10px 14px;margin-bottom:8px;box-shadow:0 1px 2px rgba(0,0,0,0.05)}
+.sc .sr{display:flex;justify-content:space-between;align-items:center;padding:3px 0;font-size:12px}
+.sc .sr .sl{color:var(--text2)}
+.sc .sr .sv{font-weight:600}
+@keyframes fi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fi .25s ease}
+.empty{text-align:center;padding:36px 16px;color:var(--text2)}
+.empty .ico{font-size:44px;margin-bottom:10px;opacity:.35}
+.empty p{font-size:13px}
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#323232;color:#fff;padding:9px 18px;border-radius:6px;font-size:13px;z-index:999;box-shadow:0 4px 12px rgba(0,0,0,0.2);animation:fi .3s ease;max-width:90vw;text-align:center}
+.hidden{display:none!important}
+.toolbar{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;align-items:center}
+.toolbar .search-box{flex:1;min-width:140px;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none}
+.toolbar .search-box:focus{border-color:var(--primary)}
+.toolbar .date-box{padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:12px;outline:none;width:120px}
+.toolbar .date-box:focus{border-color:var(--primary)}
+.export-bar{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.export-bar button{flex:1;min-width:80px;font-size:11px;padding:5px 8px}
+.rec-count{font-size:12px;color:var(--text2);text-align:center;margin-bottom:8px}
+@media(max-width:400px){.form-row{grid-template-columns:1fr}.summary-row{gap:5px}.summary-item .num{font-size:17px}}
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>汇鑫玩具工作记录系统</h1>
+  <div class="sub">
+    <span>员工登记 · 管理员审核</span>
+    <span class="mode-tag" id="modeTag">本地模式</span>
+  </div>
+  <div class="header-actions">
+    <button id="btnImport" onclick="document.getElementById('importFile').click()" title="导入备份">📂</button>
+    <button id="btnAdmin" onclick="toggleAdmin()">管理员</button>
+  </div>
+</div>
+<div class="tabs">
+  <button class="on" data-tab="submit" onclick="swTab('submit')">登记</button>
+  <button data-tab="records" onclick="swTab('records')">记录<span class="badge" id="pBadge" style="display:none">0</span></button>
+  <button data-tab="stats" onclick="swTab('stats')">统计</button>
+</div>
+<input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(event)">
+<div class="container">
+
+  <!-- SUBMIT -->
+  <div id="tabSubmit" class="fade-in">
+    <div class="card">
+      <div class="card-title">登记工作</div>
+      <form id="frmSubmit" onsubmit="submitRec(event)">
+        <div class="form-group"><label>姓名 *</label><input type="text" id="inpWorker" required placeholder="你的名字"></div>
+        <div class="form-row">
+          <div class="form-group"><label>货号 *</label><input type="text" id="inpPno" required placeholder="如: ABC-001"></div>
+          <div class="form-group"><label>名称 *</label><input type="text" id="inpName" required placeholder="产品名称"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>数量 *</label><input type="number" id="inpQty" required min="1" step="any" placeholder="0"></div>
+          <div class="form-group"><label>筐数</label><input type="number" id="inpBkt" min="0" step="any" placeholder="0"></div>
+        </div>
+        <div class="form-group"><label>备注</label><textarea id="inpNotes" placeholder="其他说明..."></textarea></div>
+        <button type="submit" class="btn btn-primary">提交记录</button>
+      </form>
+    </div>
+    <div class="sc">
+      <div class="sr"><span class="sl">今天已提交</span><span class="sv" id="todayTotal">0 条</span></div>
+      <div class="sr"><span class="sl">待审核</span><span class="sv" id="todayPending" style="color:#e37400">0 条</span></div>
+      <div class="sr"><span class="sl">已通过</span><span class="sv" id="todayApproved" style="color:#137333">0 条</span></div>
+      <div class="sr"><span class="sl">全部记录</span><span class="sv" id="allTotal" style="color:var(--primary)">0 条</span></div>
+    </div>
+  </div>
+
+  <!-- RECORDS -->
+  <div id="tabRecords" class="fade-in hidden">
+    <div class="toolbar">
+      <input class="search-box" id="searchBox" placeholder="搜索姓名/货号/名称/备注..." oninput="renderRecs()">
+      <input class="date-box" id="dateFrom" type="date" onchange="renderRecs()">
+      <input class="date-box" id="dateTo" type="date" onchange="renderRecs()">
+    </div>
+    <div style="display:flex;gap:5px;margin-bottom:8px;flex-wrap:wrap;">
+      <button class="btn btn-sm btn-outline filter-btn on" data-f="all" onclick="setF('all',this)">全部</button>
+      <button class="btn btn-sm btn-outline filter-btn" data-f="pending" onclick="setF('pending',this)">待审核</button>
+      <button class="btn btn-sm btn-outline filter-btn" data-f="approved" onclick="setF('approved',this)">已通过</button>
+      <button class="btn btn-sm btn-outline filter-btn" data-f="rejected" onclick="setF('rejected',this)">已驳回</button>
+    </div>
+    <div class="export-bar">
+      <button class="btn btn-sm btn-outline" onclick="exportCSV()">导出 CSV</button>
+      <button class="btn btn-sm btn-outline" onclick="exportJSON()">导出 JSON</button>
+    </div>
+    <div class="rec-count" id="recCount"></div>
+    <div id="recsList"></div>
+  </div>
+
+  <!-- STATS -->
+  <div id="tabStats" class="fade-in hidden">
+    <div class="summary-row">
+      <div class="summary-item"><div class="num" id="stTotal">0</div><div class="lb">总记录</div></div>
+      <div class="summary-item green"><div class="num" id="stApproved">0</div><div class="lb">已通过</div></div>
+      <div class="summary-item red"><div class="num" id="stRejected">0</div><div class="lb">已驳回</div></div>
+    </div>
+    <div class="card"><div class="card-title">按姓名汇总</div><div id="sumByWorker"></div></div>
+    <div class="card"><div class="card-title">按货号汇总</div><div id="sumByProduct"></div></div>
+    <div class="card"><div class="card-title">最近7天</div><div id="weekStats"></div></div>
+  </div>
+</div>
+
+<!-- Login -->
+<div id="loginOverlay" class="login-overlay hidden">
+  <div class="login-box">
+    <h2>管理员登录</h2>
+    <div id="loginErr" class="login-error">密码错误</div>
+    <div class="form-group"><label>管理密码</label><input type="password" id="inpPwd" placeholder="输入密码" onkeydown="if(event.key==='Enter')adminLogin()"></div>
+    <button class="btn btn-primary" onclick="adminLogin()">登录</button>
+    <button class="btn btn-outline" style="margin-top:6px" onclick="closeLogin()">取消</button>
+  </div>
+</div>
+
+<!-- Edit Modal -->
+<div id="editModal" class="modal-overlay hidden">
+  <div class="modal">
+    <h3>编辑记录</h3>
+    <form id="frmEdit" onsubmit="saveEdit(event)">
+      <div class="form-group"><label>姓名 *</label><input type="text" id="edWorker" required></div>
+      <div class="form-row">
+        <div class="form-group"><label>货号 *</label><input type="text" id="edPno" required></div>
+        <div class="form-group"><label>名称 *</label><input type="text" id="edName" required></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>数量 *</label><input type="number" id="edQty" required min="1" step="any"></div>
+        <div class="form-group"><label>筐数</label><input type="number" id="edBkt" min="0" step="any"></div>
+      </div>
+      <div class="form-group"><label>备注</label><textarea id="edNotes"></textarea></div>
+      <div class="form-group">
+        <label>状态</label>
+        <select id="edStatus">
+          <option value="pending">待审核</option>
+          <option value="approved">已通过</option>
+          <option value="rejected">已驳回</option>
+        </select>
+      </div>
+      <div class="btn-group">
+        <button type="submit" class="btn btn-primary">保存</button>
+        <button type="button" class="btn btn-outline" onclick="closeEdit()">取消</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+var KEY = "huixin_work", PASS = "admin123";
+var curF = "all", isAdmin = false, editId = null, adminPwd = "";
+var serverMode = false, allRecs = [];
+var adminPwdServer = ""; // stored for server mode admin
+
+function gid(){ return Date.now().toString(36) + "_" + Math.random().toString(36).slice(2,6); }
+function today(){ return new Date().toISOString().slice(0,10); }
+
+// ===== DATA LAYER =====
+function api(url, opts){
+  return fetch(url, opts).then(function(r){ return r.json(); });
+}
+
+function getLocal(){ try{ return JSON.parse(localStorage.getItem(KEY))||[]; }catch(e){return [];} }
+function setLocal(r){ localStorage.setItem(KEY, JSON.stringify(r)); }
+
+function loadRecs(){
+  if(serverMode){
+    api("/api/records").then(function(data){
+      allRecs = data;
+      updAll();
+    }).catch(function(){
+      serverMode = false;
+      document.getElementById("modeTag").textContent = "本地模式";
+      document.getElementById("modeTag").classList.remove("on");
+      allRecs = getLocal();
+      updAll();
+    });
+  } else {
+    allRecs = getLocal();
+    updAll();
+  }
+}
+
+function saveRecs(){
+  if(serverMode) return; // server saves automatically
+  setLocal(allRecs);
+}
+
+// ===== SUBMIT =====
+function submitRec(e){
+  e.preventDefault();
+  var rec = {
+    id: gid(),
+    worker: document.getElementById("inpWorker").value.trim(),
+    productNo: document.getElementById("inpPno").value.trim(),
+    name: document.getElementById("inpName").value.trim(),
+    quantity: parseFloat(document.getElementById("inpQty").value) || 0,
+    baskets: parseFloat(document.getElementById("inpBkt").value) || 0,
+    notes: document.getElementById("inpNotes").value.trim(),
+    status: "pending",
+    createdAt: new Date().toISOString()
+  };
+  if(!rec.worker || !rec.productNo || !rec.name || rec.quantity<=0){ toast("请填写姓名、货号、名称和数量"); return; }
+
+  if(serverMode){
+    api("/api/records", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(rec)}).then(function(){
+      document.getElementById("frmSubmit").reset();
+      toast("提交成功，等待管理员审核");
+      loadRecs();
+    }).catch(function(){ toast("提交失败"); });
+  } else {
+    var list = getLocal();
+    list.unshift(rec);
+    setLocal(list);
+    allRecs = list;
+    document.getElementById("frmSubmit").reset();
+    toast("提交成功，等待管理员审核");
+    updAll();
+  }
+}
+
+// ===== TABS =====
+function swTab(t){
+  document.querySelectorAll(".tabs button").forEach(function(b){b.classList.remove("on");});
+  document.querySelector('.tabs button[data-tab="'+t+'"]').classList.add("on");
+  ["submit","records","stats"].forEach(function(x){
+    var el = document.getElementById("tab"+x.charAt(0).toUpperCase()+x.slice(1));
+    el.classList.toggle("hidden", x!==t);
+  });
+  if(t==="records") renderRecs();
+  if(t==="stats") renderStats();
+}
+
+function setF(f,btn){
+  curF=f;
+  document.querySelectorAll(".filter-btn").forEach(function(b){b.classList.remove("on");});
+  if(btn) btn.classList.add("on");
+  renderRecs();
+}
+
+function esc(s){ var d=document.createElement("div"); d.textContent=s; return d.innerHTML; }
+
+// ===== RENDER =====
+function renderRecs(){
+  var c = document.getElementById("recsList");
+  var list = allRecs.slice();
+  var kw = document.getElementById("searchBox").value.trim().toLowerCase();
+  var dF = document.getElementById("dateFrom").value;
+  var dT = document.getElementById("dateTo").value;
+
+  if(curF!=="all") list = list.filter(function(r){ return r.status===curF; });
+  if(kw) list = list.filter(function(r){
+    return (r.worker||"").toLowerCase().indexOf(kw)>-1
+      || (r.productNo||"").toLowerCase().indexOf(kw)>-1
+      || (r.name||"").toLowerCase().indexOf(kw)>-1
+      || (r.notes||"").toLowerCase().indexOf(kw)>-1;
+  });
+  if(dF) list = list.filter(function(r){ return r.createdAt.slice(0,10)>=dF; });
+  if(dT) list = list.filter(function(r){ return r.createdAt.slice(0,10)<=dT; });
+
+  document.getElementById("recCount").textContent = "共 "+list.length+" 条记录";
+  if(!list.length){ c.innerHTML='<div class="empty"><div class="ico"></div><p>暂无匹配记录</p></div>'; return; }
+
+  var sl={pending:"待审核",approved:"已通过",rejected:"已驳回"};
+  var sc={pending:"pending",approved:"approved",rejected:"rejected"};
+  c.innerHTML = list.map(function(r){
+    var d=new Date(r.createdAt);
+    var ds=d.toLocaleDateString("zh-CN")+" "+d.toLocaleTimeString("zh-CN",{hour:"2-digit",minute:"2-digit"});
+    var h='<div class="record-item '+sc[r.status]+' fade-in">';
+    h+='<div class="record-header"><span class="pno">'+esc(r.worker)+" | "+esc(r.productNo)+" — "+esc(r.name)+'</span><span class="tag '+sc[r.status]+'">'+sl[r.status]+'</span></div>';
+    h+='<div class="record-body"><span class="fi"><strong>数量:</strong> '+r.quantity+'</span><span class="fi"><strong>筐数:</strong> '+(r.baskets||"-")+'</span></div>';
+    if(r.notes) h+='<div class="record-notes">'+esc(r.notes)+'</div>';
+    h+='<div class="record-meta">'+ds+'</div>';
+    if(isAdmin){
+      h+='<div class="record-actions">';
+      h+='<button class="btn btn-xs btn-outline" onclick="openEdit(\''+r.id+'\')">编辑</button>';
+      h+='<button class="btn btn-xs btn-success" onclick="setSt(\''+r.id+'\',\'approved\')">通过</button>';
+      h+='<button class="btn btn-xs btn-danger" onclick="setSt(\''+r.id+'\',\'rejected\')">驳回</button>';
+      h+='<button class="btn btn-xs btn-danger" onclick="delRec(\''+r.id+'\')">删除</button>';
+      h+='</div>';
+    }
+    h+='</div>'; return h;
+  }).join("");
+}
+
+// ===== ADMIN =====
+function toggleAdmin(){
+  if(isAdmin){
+    isAdmin=false; adminPwd=""; adminPwdServer="";
+    document.getElementById("btnAdmin").textContent="管理员";
+    document.getElementById("btnAdmin").classList.remove("on");
+    toast("已退出"); updAll(); return;
+  }
+  document.getElementById("loginOverlay").classList.remove("hidden");
+  document.getElementById("inpPwd").value="";
+  document.getElementById("loginErr").style.display="none";
+  document.getElementById("inpPwd").focus();
+}
+function closeLogin(){ document.getElementById("loginOverlay").classList.add("hidden"); }
+
+function adminLogin(){
+  var pwd = document.getElementById("inpPwd").value;
+  if(serverMode){
+    api("/api/auth", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({password:pwd})}).then(function(res){
+      if(res.ok){
+        isAdmin=true; adminPwdServer=pwd;
+        document.getElementById("btnAdmin").textContent="管理员";
+        document.getElementById("btnAdmin").classList.add("on");
+        document.getElementById("loginOverlay").classList.add("hidden");
+        toast("管理员已登录"); updAll();
+      } else {
+        document.getElementById("loginErr").style.display="block";
+        document.getElementById("inpPwd").value="";
+        document.getElementById("inpPwd").focus();
+      }
+    });
+  } else {
+    if(pwd === PASS){
+      isAdmin=true;
+      document.getElementById("btnAdmin").textContent="管理员";
+      document.getElementById("btnAdmin").classList.add("on");
+      document.getElementById("loginOverlay").classList.add("hidden");
+      toast("管理员已登录"); updAll();
+    } else {
+      document.getElementById("loginErr").style.display="block";
+      document.getElementById("inpPwd").value="";
+      document.getElementById("inpPwd").focus();
+    }
+  }
+}
+
+function setSt(id, st){
+  if(!isAdmin) return;
+  if(serverMode){
+    api("/api/records/"+id, {method:"PUT", headers:{"Content-Type":"application/json","X-Admin-Password":adminPwdServer}, body:JSON.stringify({status:st})}).then(function(){ loadRecs(); toast(st==="approved"?"已通过":"已驳回"); });
+  } else {
+    var list = getLocal();
+    var idx = list.findIndex(function(r){ return r.id===id; });
+    if(idx===-1) return;
+    list[idx].status = st;
+    list[idx].reviewedAt = new Date().toISOString();
+    setLocal(list); allRecs=list; updAll();
+    toast(st==="approved"?"已通过":"已驳回");
+  }
+}
+
+function delRec(id){
+  if(!isAdmin) return;
+  if(!confirm("确定删除？")) return;
+  if(serverMode){
+    api("/api/records/"+id, {method:"DELETE", headers:{"X-Admin-Password":adminPwdServer}}).then(function(){ loadRecs(); toast("已删除"); });
+  } else {
+    var list = getLocal().filter(function(r){ return r.id!==id; });
+    setLocal(list); allRecs=list; updAll(); toast("已删除");
+  }
+}
+
+function openEdit(id){
+  if(!isAdmin) return;
+  var r = allRecs.find(function(rec){ return rec.id===id; });
+  if(!r) return;
+  editId=id;
+  document.getElementById("edWorker").value = r.worker||"";
+  document.getElementById("edPno").value = r.productNo;
+  document.getElementById("edName").value = r.name;
+  document.getElementById("edQty").value = r.quantity;
+  document.getElementById("edBkt").value = r.baskets;
+  document.getElementById("edNotes").value = r.notes||"";
+  document.getElementById("edStatus").value = r.status;
+  document.getElementById("editModal").classList.remove("hidden");
+}
+function closeEdit(){ document.getElementById("editModal").classList.add("hidden"); editId=null; }
+
+function saveEdit(e){
+  e.preventDefault();
+  if(!isAdmin || !editId) return;
+  var body = {
+    worker: document.getElementById("edWorker").value.trim(),
+    productNo: document.getElementById("edPno").value.trim(),
+    name: document.getElementById("edName").value.trim(),
+    quantity: parseFloat(document.getElementById("edQty").value)||0,
+    baskets: parseFloat(document.getElementById("edBkt").value)||0,
+    notes: document.getElementById("edNotes").value.trim(),
+    status: document.getElementById("edStatus").value
+  };
+  if(serverMode){
+    api("/api/records/"+editId, {method:"PUT", headers:{"Content-Type":"application/json","X-Admin-Password":adminPwdServer}, body:JSON.stringify(body)}).then(function(){ closeEdit(); loadRecs(); toast("已保存"); });
+  } else {
+    var list = getLocal();
+    var idx = list.findIndex(function(r){ return r.id===editId; });
+    if(idx===-1) return;
+    list[idx].worker = body.worker;
+    list[idx].productNo = body.productNo;
+    list[idx].name = body.name;
+    list[idx].quantity = body.quantity;
+    list[idx].baskets = body.baskets;
+    list[idx].notes = body.notes;
+    list[idx].status = body.status;
+    list[idx].editedAt = new Date().toISOString();
+    setLocal(list); allRecs=list; closeEdit(); updAll(); toast("已保存");
+  }
+}
+
+// ===== EXPORT / IMPORT =====
+function exportCSV(){
+  if(!allRecs.length){ toast("暂无数据"); return; }
+  var BOM="\uFEFF";
+  var csv = BOM + "姓名,货号,名称,数量,筐数,备注,状态,提交时间\n";
+  allRecs.forEach(function(r){
+    var st={pending:"待审核",approved:"已通过",rejected:"已驳回"};
+    csv += [r.worker||"", r.productNo, r.name, r.quantity, r.baskets||"", (r.notes||"").replace(/"/g,'""'), st[r.status], r.createdAt]
+      .map(function(v){ return '"'+v+'"'; }).join(",") + "\n";
+  });
+  var blob = new Blob([csv], {type:"text/csv;charset=utf-8"});
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "汇鑫玩具_记录_"+today()+".csv";
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast("CSV 已导出");
+}
+
+function exportJSON(){
+  if(!allRecs.length){ toast("暂无数据"); return; }
+  var data = {version:1, exportedAt:new Date().toISOString(), records:allRecs};
+  var blob = new Blob([JSON.stringify(data,null,2)], {type:"application/json"});
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "汇鑫玩具_备份_"+today()+".json";
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast("JSON 备份已导出");
+}
+
+function importJSON(e){
+  var file = e.target.files[0];
+  if(!file) return;
+  var reader = new FileReader();
+  reader.onload = function(ev){
+    try {
+      var data = JSON.parse(ev.target.result);
+      var records = data.records || data;
+      if(!Array.isArray(records) || !records.length){ toast("文件格式错误"); return; }
+      if(!confirm("导入 "+records.length+" 条记录？现有数据将被覆盖")) return;
+      if(serverMode){
+        // In server mode, we'll import locally and let admin know to import on the server
+        toast("服务器模式下请到服务器电脑上导入");
+        return;
+      }
+      setLocal(records);
+      allRecs = records;
+      toast("已导入 "+records.length+" 条记录");
+      updAll();
+    } catch(err){
+      toast("导入失败: 文件格式不正确");
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = "";
+}
+
+// ===== STATS =====
+function renderStats(){
+  var list = allRecs;
+  document.getElementById("stTotal").textContent = list.length;
+  document.getElementById("stApproved").textContent = list.filter(function(r){return r.status==="approved";}).length;
+  document.getElementById("stRejected").textContent = list.filter(function(r){return r.status==="rejected";}).length;
+
+  var bw = {};
+  list.filter(function(r){return r.status==="approved";}).forEach(function(r){
+    var w=r.worker||"未知"; if(!bw[w]) bw[w]={worker:w,qty:0,baskets:0,count:0};
+    bw[w].qty+=r.quantity; bw[w].baskets+=r.baskets||0; bw[w].count+=1;
+  });
+  var wc=document.getElementById("sumByWorker");
+  var wv=Object.values(bw);
+  if(!wv.length) wc.innerHTML='<div style="text-align:center;color:var(--text2);padding:10px;">暂无已通过数据</div>';
+  else wc.innerHTML=wv.map(function(p){return '<div class="sr"><span class="sl">'+esc(p.worker)+' <span style="color:#999;font-size:11px">('+p.count+'次)</span></span><span class="sv">'+p.qty+' / '+p.baskets+'筐</span></div>';}).join("");
+
+  var bp = {};
+  list.filter(function(r){return r.status==="approved";}).forEach(function(r){
+    var k=r.productNo+"|"+r.name; if(!bp[k]) bp[k]={productNo:r.productNo,name:r.name,qty:0,baskets:0,count:0};
+    bp[k].qty+=r.quantity; bp[k].baskets+=r.baskets||0; bp[k].count+=1;
+  });
+  var pc=document.getElementById("sumByProduct");
+  var pv=Object.values(bp);
+  if(!pv.length) pc.innerHTML='<div style="text-align:center;color:var(--text2);padding:10px;">暂无已通过数据</div>';
+  else pc.innerHTML=pv.map(function(p){return '<div class="sr"><span class="sl">'+esc(p.productNo)+" — "+esc(p.name)+' <span style="color:#999;font-size:11px">('+p.count+'次)</span></span><span class="sv">'+p.qty+' / '+p.baskets+'筐</span></div>';}).join("");
+
+  var dn=["日","一","二","三","四","五","六"]; var wh="";
+  for(var i=6;i>=0;i--){ var d=new Date(); d.setDate(d.getDate()-i); var ds=d.toISOString().slice(0,10);
+    var dr=list.filter(function(r){return r.createdAt.slice(0,10)===ds&&r.status==="approved";});
+    var tq=dr.reduce(function(s,r){return s+r.quantity;},0);
+    wh+='<div class="sr"><span class="sl">'+ds+" 周"+dn[d.getDay()]+'</span><span class="sv">'+tq+" ("+dr.length+"条)</span></div>";}
+  document.getElementById("weekStats").innerHTML = wh;
+}
+
+function updToday(){
+  var t=today();
+  var tr=allRecs.filter(function(r){return r.createdAt.slice(0,10)===t;});
+  document.getElementById("todayTotal").textContent = tr.length+" 条";
+  document.getElementById("todayPending").textContent = tr.filter(function(r){return r.status==="pending";}).length+" 条";
+  document.getElementById("todayApproved").textContent = tr.filter(function(r){return r.status==="approved";}).length+" 条";
+  document.getElementById("allTotal").textContent = allRecs.length+" 条";
+  var pt=allRecs.filter(function(r){return r.status==="pending";}).length;
+  var b=document.getElementById("pBadge");
+  if(pt>0){ b.textContent=pt; b.style.display="inline"; } else b.style.display="none";
+}
+
+function toast(m){ var el=document.querySelector(".toast"); if(el)el.remove(); el=document.createElement("div"); el.className="toast"; el.textContent=m; document.body.appendChild(el); setTimeout(function(){el.remove();},2500); }
+
+function updAll(){ updToday(); if(!document.getElementById("tabRecords").classList.contains("hidden")) renderRecs(); if(!document.getElementById("tabStats").classList.contains("hidden")) renderStats(); }
+
+// ===== INIT =====
+// Try server mode first
+fetch("/api/records", {method:"GET", timeout:2000}).then(function(r){
+  if(r.ok && r.status===200){
+    serverMode = true;
+    document.getElementById("modeTag").textContent = "联网模式";
+    document.getElementById("modeTag").classList.add("on");
+    return r.json();
+  }
+  throw new Error("no server");
+}).then(function(data){
+  allRecs = data;
+  if(sessionStorage.getItem("hx_admin")==="true" && sessionStorage.getItem("hx_pwd")){
+    isAdmin=true; adminPwdServer=sessionStorage.getItem("hx_pwd");
+    document.getElementById("btnAdmin").classList.add("on");
+  }
+  updAll();
+  setInterval(loadRecs, 15000);
+}).catch(function(){
+  serverMode = false;
+  document.getElementById("modeTag").textContent = "本地模式";
+  allRecs = getLocal();
+  if(sessionStorage.getItem("hx_admin_standalone")==="true"){
+    isAdmin=true;
+    document.getElementById("btnAdmin").classList.add("on");
+  }
+  updAll();
+});
+
+window.addEventListener("beforeunload", function(){
+  if(isAdmin && adminPwdServer) { sessionStorage.setItem("hx_admin","true"); sessionStorage.setItem("hx_pwd",adminPwdServer); }
+  else if(isAdmin) { sessionStorage.setItem("hx_admin_standalone","true"); }
+  else { sessionStorage.removeItem("hx_admin"); sessionStorage.removeItem("hx_pwd"); sessionStorage.removeItem("hx_admin_standalone"); }
+});
+</script>
+</body>
+</html>
